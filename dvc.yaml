@@ -1,0 +1,8 @@
+stages:
+  ingestion:
+    cmd: python3 -m src.jurisrag_arabic.ingestion.processDocs
+    deps:
+      - data/raw/legal_doc.pdf
+      - src/jurisrag_arabic/ingestion/processDocs.py
+    outs:
+      - data/processed/legal_doc.json

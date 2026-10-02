@@ -41,8 +41,8 @@ class Converter:
                 "section": "",
                 "section_name": "",
                 "topic": "",
-                "text_ar": "",
-                "text_en": "",
+                "text_ar": "هذه المادة ملغاة",
+                "text_en": "This article is repealed",
                 "is_repealed": True,
                 "source_page": "",
             }
