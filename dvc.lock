@@ -1,16 +1,16 @@
 schema: '2.0'
 stages:
   ingestion:
-    cmd: python3 -m src.jurisrag_arabic.ingestion.processDocs
+    cmd: python3 -m src.jurisrag_arabic.ingestion.process_docs
     deps:
     - path: data/raw/legal_doc.pdf
       hash: md5
       md5: 5086ef5f16f15d856278db943e58e948
       size: 2599703
-    - path: src/jurisrag_arabic/ingestion/processDocs.py
+    - path: src/jurisrag_arabic/ingestion/process_docs.py
       hash: md5
-      md5: 58afe746d44779930d796337ba0c95db
-      size: 13118
+      md5: 04b850c05c90b1867a3430bb66640381
+      size: 13896
     outs:
     - path: data/processed/legal_doc.json
       hash: md5

@@ -21,6 +21,8 @@ dev = [
     "arabic-reshaper>=3.0.1",
     "pandas>=3.0.6",
     "pdfplumber>=0.11.10",
-    "pymupdf>=1.28.2",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
     "python-bidi>=0.6.11",
+    "ruff>=0.16.10",
 ]
