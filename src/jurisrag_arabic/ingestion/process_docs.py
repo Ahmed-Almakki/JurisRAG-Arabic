@@ -67,9 +67,16 @@ class Converter:
         return num_str.translate(western_to_eastern)
 
     @staticmethod
+    def convert_to_western_digits(num_str: str) -> str:
+        """Converts Eastern Arabic digits (٠-٩) to Western digits (0-9)."""
+        eastern_to_western = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
+        return num_str.translate(eastern_to_western)
+
+    @staticmethod
     def extract_english_only(text: str) -> str:
         """Removes Arabic characters and extra spaces, returning only English metadata."""
-        cleaned = re.sub(r"[\u0600-\u06FF]+", "", text)
+        text_western = Converter.convert_to_western_digits(text)
+        cleaned = re.sub(r"[\u0600-\u06FF]+", "", text_western)
         return " ".join(cleaned.split()).strip()
 
     @classmethod
@@ -113,13 +120,14 @@ class Converter:
         fixed_words = [cls.fix_visual_arabic_word(w["text"]) for w in ar_words_rtl]
         return " ".join(fixed_words).strip()
 
-    @staticmethod
-    def process_english_line(en_words: list) -> str:
+    @classmethod
+    def process_english_line(cls, en_words: list) -> str:
         """Sorts English words Left-to-Right (ascending x0 coordinate)."""
         if not en_words:
             return ""
         en_words_ltr = sorted(en_words, key=lambda w: w["x0"])
-        return " ".join(w["text"] for w in en_words_ltr).strip()
+        raw_text = " ".join(w["text"] for w in en_words_ltr).strip()
+        return cls.extract_english_only(raw_text)
 
     def extract_legal_document(self):
         logger.info("Starting extraction from %s", self.doc)

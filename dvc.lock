@@ -9,10 +9,10 @@ stages:
       size: 2599703
     - path: src/jurisrag_arabic/ingestion/process_docs.py
       hash: md5
-      md5: 04b850c05c90b1867a3430bb66640381
-      size: 13896
+      md5: 160c6f5c3a18383f189defbf56ebb934
+      size: 14318
     outs:
     - path: data/processed/legal_doc.json
       hash: md5
-      md5: abbb2c942778aa52d8375ab19f8d914d
-      size: 1208714
+      md5: 0f599072ffcfd7ca7dd336774fc3a3fa
+      size: 1209604
