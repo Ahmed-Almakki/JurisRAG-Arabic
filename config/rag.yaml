@@ -1,0 +1,7 @@
+chunking:
+  # Maximum whitespace-separated words per chunk (chunk_article's max_words).
+  chunk_size: 300
+
+retrieval:
+  # Number of nearest chunks returned for each query.
+  top_k: 5

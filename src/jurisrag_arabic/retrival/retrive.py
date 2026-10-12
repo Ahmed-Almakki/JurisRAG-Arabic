@@ -1,5 +1,6 @@
 from ..ingestion.add_to_db import get_connection
 from ..ingestion.embedding import embedd_text
+from ..rag_config import load_rag_config
 
 
 class Retriever:
@@ -14,7 +15,7 @@ class Retriever:
     def retrieve(
         self,
         query: str,
-        top_k: int = 5,
+        top_k: int | None = None,
         language: str | None = None,
     ) -> list[dict]:
         """Return nearest chunks joined to their source article records.
@@ -23,7 +24,9 @@ class Retriever:
         language. The pgvector cosine distance is returned as ``distance`` and
         its inverse ranking score as ``similarity``.
         """
-        if top_k < 1:
+        if top_k is None:
+            top_k = load_rag_config()["retrieval"]["top_k"]
+        if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k < 1:
             raise ValueError("top_k must be at least 1")
         if language not in (None, "ar", "en"):
             raise ValueError("language must be 'ar', 'en', or None")
