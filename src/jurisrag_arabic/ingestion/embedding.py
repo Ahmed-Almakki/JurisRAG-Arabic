@@ -5,6 +5,8 @@ from pathlib import Path
 
 from llama_cpp import Llama
 
+from ..rag_config import load_rag_config
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +31,14 @@ def _get_model():
 
 
 def chunk_article(
-    article_dict: dict, text_field: str = "text_ar", max_words: int = 300
+    article_dict: dict, text_field: str = "text_ar", max_words: int | None = None
 ) -> list[dict]:
     """Split one language's article text into chunks, preserving its metadata."""
+    if max_words is None:
+        max_words = load_rag_config()["chunking"]["chunk_size"]
+    if isinstance(max_words, bool) or not isinstance(max_words, int) or max_words < 1:
+        raise ValueError("max_words must be a positive integer")
+
     article_number = article_dict["article_number"]
     text = article_dict.get(text_field, "").strip()
     if not text:

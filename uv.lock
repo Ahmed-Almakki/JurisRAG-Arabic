@@ -474,6 +474,7 @@ dependencies = [
     { name = "dotenv" },
     { name = "huggingface-hub" },
     { name = "psycopg2-binary" },
+    { name = "pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -492,6 +493,7 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "huggingface-hub", specifier = ">=2.2.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.13" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 
 [package.metadata.requires-dev]

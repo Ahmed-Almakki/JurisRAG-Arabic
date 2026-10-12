@@ -11,6 +11,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "huggingface-hub>=2.2.0",
     "psycopg2-binary>=2.9.13",
+    "pyyaml>=6.0.2",
 ]
 
 
