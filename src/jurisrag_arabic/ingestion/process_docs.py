@@ -7,24 +7,90 @@ from pathlib import Path
 import pdfplumber
 from dotenv import load_dotenv
 
-load_dotenv()
-pdf_filename = os.getenv("PDF_FILENAME", "legal_doc.pdf")
-pdf_output_filename = os.getenv("PDF_OUTPUT_FILENAME", "legal_doc.json")
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-pdf_input = PROJECT_ROOT / "data" / "raw" / pdf_filename
-json_output = PROJECT_ROOT / "data" / "processed" / pdf_output_filename
+from .add_to_db import init_db, insert_processed_articles
+from .embedding import chunk_article, embedd_text
 
 logger = logging.getLogger(__name__)
+
+
+def _chunk_and_embed(article: dict, text_field: str) -> list[dict]:
+    """Chunk and embed one language for an article."""
+    article_number = article.get("article_number", "unknown")
+    language = text_field.removeprefix("text_")
+    try:
+        chunks = chunk_article(article, text_field=text_field)
+        if not chunks:
+            return []
+
+        logger.info(
+            "Article %s (%s): created %d chunk(s)",
+            article_number,
+            language,
+            len(chunks),
+        )
+        # for index, chunk in enumerate(chunks, start=1):
+        #     logger.debug(
+        #         "Article %s (%s): embedding chunk %d/%d (%d characters)",
+        #         article_number, language, index, len(chunks), len(chunk["text"]),
+        #     )
+        #     chunk["embedding"] = embedd_text(chunk["text"])
+        texts = [chunk["text"] for chunk in chunks]
+        embeddings = embedd_text(texts)
+        for chunk, emb in zip(chunks, embeddings):
+            chunk["embedding"] = emb
+
+        logger.info("Article %s (%s): embeddings complete", article_number, language)
+        return chunks
+    except Exception:
+        logger.exception(
+            "Article %s (%s): chunking or embedding failed", article_number, language
+        )
+        raise
+
+
+def enrich_articles_with_embeddings(articles: list[dict]) -> list[dict]:
+    """Return article records with independently chunked Arabic and English text."""
+    enriched = []
+    logger.info("Starting chunking and embedding for %d articles", len(articles))
+    article_number = "unknown"
+    try:
+        for index, article in enumerate(articles, start=1):
+            article_number = article.get("article_number", "unknown")
+            logger.info(
+                "Processing article %d/%d (number %s)",
+                index,
+                len(articles),
+                article_number,
+            )
+            # with ThreadPoolExecutor(max_workers=2) as executor:
+            #     ar_future = executor.submit(_chunk_and_embed, article, "text_ar")
+            #     en_future = executor.submit(_chunk_and_embed, article, "text_en")
+            #     result = dict(article)
+            # result["chunks_ar"] = ar_future.result()
+            # result["chunks_en"] = en_future.result()
+            chunks_ar = _chunk_and_embed(article, "text_ar")
+            chunks_en = _chunk_and_embed(article, "text_en")
+
+            result = dict(article)
+            result["chunks_ar"] = chunks_ar
+            result["chunks_en"] = chunks_en
+
+            enriched.append(result)
+    except Exception:
+        logger.exception(
+            "Embedding stopped while processing article %s", article_number
+        )
+        raise
+    logger.info("Chunking and embedding complete for %d articles", len(enriched))
+    return enriched
 
 
 class Converter:
     """Converting PDF doc to json formate"""
 
-    def __init__(self, doc=pdf_input, path=json_output):
+    def __init__(self, doc, path):
         self.doc = doc
         self.path = path
-        self.path.parent.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def add_missing_articles(articles: list) -> list:
@@ -48,7 +114,7 @@ class Converter:
                 "text_ar": "هذه المادة ملغاة",
                 "text_en": "This article is repealed",
                 "is_repealed": True,
-                "source_page": "",
+                "source_page": None,
             }
             by_number[number] = missing_article
 
@@ -59,6 +125,29 @@ class Converter:
             last_number,
         )
         return [by_number[number] for number in sorted(by_number)]
+
+    @staticmethod
+    def fill_empty_article_text(articles: list) -> list:
+        """Fill missing article text with language-specific fallback messages."""
+        missing_ar = 0
+        missing_en = 0
+        for article in articles:
+            text_ar = article.get("text_ar")
+            if not text_ar or not text_ar.strip():
+                article["text_ar"] = "هذه المادة فارغة"
+                missing_ar += 1
+
+            text_en = article.get("text_en")
+            if not text_en or not text_en.strip():
+                article["text_en"] = "this is an empty article"
+                missing_en += 1
+
+        logger.info(
+            "Filled empty text for %d Arabic and %d English article(s)",
+            missing_ar,
+            missing_en,
+        )
+        return articles
 
     @staticmethod
     def convert_to_eastern_arabic_digits(num_str: str) -> str:
@@ -335,20 +424,44 @@ class Converter:
         final_list = self.add_missing_articles(
             [unique_articles[k] for k in sorted(unique_articles.keys())]
         )
-
-        try:
-            with open(self.path, "w", encoding="utf-8") as f:
-                json.dump(final_list, f, ensure_ascii=False, indent=2)
-        except OSError:
-            logger.exception("Failed to write extracted articles to %s", self.path)
-            raise
-
         logger.info(
-            "Extraction complete: %d articles written to %s", len(final_list), self.path
+            "Parsed %d unique articles; %d records after filling article number gaps",
+            len(unique_articles),
+            len(final_list),
         )
+        final_list = self.fill_empty_article_text(final_list)
+
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(final_list, f, ensure_ascii=False, indent=2)
+
+        logger.info("Extraction complete: %d articles", len(final_list))
         return final_list
 
 
 if __name__ == "__main__":
-    converter = Converter()
-    result = converter.extract_legal_document()
+    load_dotenv()
+
+    logging.basicConfig(
+        level=os.getenv("LOG_LEVEL", "INFO").upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    pdf_filename = os.getenv("PDF_FILENAME", "legal_doc.pdf")
+    pdf_output_filename = os.getenv("PDF_OUTPUT_FILENAME", "legal_doc.json")
+
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+    pdf_input = PROJECT_ROOT / "data" / "raw" / pdf_filename
+    json_output = PROJECT_ROOT / "data" / "processed" / pdf_output_filename
+
+    try:
+        logger.info("Ingestion started for PDF %s", pdf_input)
+        converter = Converter(doc=pdf_input, path=json_output)
+        result = converter.extract_legal_document()
+        result = enrich_articles_with_embeddings(result)
+        logger.info("Initializing database")
+        init_db()
+        logger.info("Saving %d enriched articles to database", len(result))
+        insert_processed_articles(result)
+        logger.info("Ingestion completed successfully")
+    except Exception:
+        logger.exception("Ingestion failed")
+        raise
