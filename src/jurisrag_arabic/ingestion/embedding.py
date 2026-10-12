@@ -77,7 +77,7 @@ def chunk_article(
     ]
 
 
-def embedd_text(texts: list[str]) -> list[float]:
+def embedd_text(texts: list[str]) -> list[list[float]]:
     """
     Embedding texts
     """
