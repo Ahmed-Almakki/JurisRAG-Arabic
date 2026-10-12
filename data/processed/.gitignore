@@ -1,1 +1,2 @@
-/legal_doc.json
+data/raw/*
+data/processed/*
