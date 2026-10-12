@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from .add_to_db import init_db, insert_processed_articles
 from .embedding import chunk_article, embedd_text
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 logger = logging.getLogger(__name__)
 
 
@@ -448,7 +449,6 @@ if __name__ == "__main__":
     pdf_filename = os.getenv("PDF_FILENAME", "legal_doc.pdf")
     pdf_output_filename = os.getenv("PDF_OUTPUT_FILENAME", "legal_doc.json")
 
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
     pdf_input = PROJECT_ROOT / "data" / "raw" / pdf_filename
     json_output = PROJECT_ROOT / "data" / "processed" / pdf_output_filename
 

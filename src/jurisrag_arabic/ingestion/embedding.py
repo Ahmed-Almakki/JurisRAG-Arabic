@@ -14,13 +14,18 @@ MODEL_PATH = PROJECT_ROOT / "models" / "bge-m3" / "bge-m3-Q8_0.gguf"
 if not MODEL_PATH.is_file():
     raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
-model = Llama(
-    model_path=str(MODEL_PATH),
-    embedding=True,
-    verbose=False,
-)
-
+model = None
 _model_lock = threading.Lock()
+
+
+def _get_model():
+    """Load the embedding model on first use so importing helpers needs no model file."""
+    global model
+    if model is None:
+        if not MODEL_PATH.is_file():
+            raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
+        model = Llama(model_path=str(MODEL_PATH), embedding=True, verbose=False)
+    return model
 
 
 def chunk_article(
@@ -76,11 +81,11 @@ def embedd_text(texts: list[str]) -> list[float]:
     """
     Embedding texts
     """
-    logger.info(f"Creating embedding for text of length {len(texts)}")
+    logger.info("Creating embeddings for %d text(s)", len(texts))
     if not texts:
         return []
 
     with _model_lock:
-        result = model.create_embedding(texts)
+        result = _get_model().create_embedding(texts)
 
     return [item["embedding"] for item in result["data"]]
