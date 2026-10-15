@@ -17,3 +17,6 @@ db:
 	  -e POSTGRES_PASSWORD=postgres \
 	  -v pg_data:/var/lib/postgresql/data \
 	  pgvector/pgvector:pg17
+
+run:
+	bentoml serve jurisrag_arabic.rag:RAG --reload

@@ -1,7 +1,32 @@
-chunking:
-  # Maximum whitespace-separated words per chunk (chunk_article's max_words).
+embedding:
   chunk_size: 300
 
 retrieval:
-  # Number of nearest chunks returned for each query.
   top_k: 5
+
+embedding_model:
+  repo_id: "gpustack/bge-m3-GGUF"
+  model_name: "bge-m3-Q8_0.gguf"
+  revision: "5acb8ca3a08db0f893e9c9f9a99861a095f2597"
+  sha256: "950f4a8e5e19477a6d3c26d2f162233c20002c601f75e4b002e3239997821167"
+
+llm:
+  model_name: "openai/gpt-oss-120b"
+  temperature: 0.2
+  api_key: ${OPENAI_API_KEY}
+
+system_prompt: |
+  You are an Egyptian legal assistant. Answer only from the supplied legal sources.
+  Do not use outside knowledge or training data. If the sources do not contain the
+  answer, say: "لا يمكن العثور على إجابة لهذا السؤال في المواد القانونية المقدمة"
+  (An answer cannot be found in the provided legal articles).
+  Cite the article number and source citation for every legal claim.
+  IMPORTANT: If the user asks in arabic use the 'text_ar' and if in english use the 'text_en' field in the
+  legal sources. 
+  
+user_message_template: |
+  Retrieved Legal Sources:
+  {context_block}
+
+  User Question:
+  {query}
