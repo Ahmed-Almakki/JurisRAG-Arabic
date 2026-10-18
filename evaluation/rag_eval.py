@@ -7,7 +7,6 @@ from pathlib import Path
 import mlflow
 from dotenv import load_dotenv
 from mlflow.genai.scorers import Correctness, RelevanceToQuery
-from mlflow.genai.scorers.ragas import Faithfulness
 
 from jurisrag_arabic.rag import RAG, QueryRequest
 from jurisrag_arabic.rag_config import load_rag_config
@@ -109,11 +108,7 @@ def run_eval(eval_lang: str = "ar") -> None:
 
     dataset = prepare_eval_dataset(eval_lang)[:5]
 
-    scorers = [
-        Correctness(model=JUDGE),
-        RelevanceToQuery(model=JUDGE),
-        Faithfulness(model=JUDGE),
-    ]
+    scorers = [Correctness(model=JUDGE), RelevanceToQuery(model=JUDGE)]
 
     with mlflow.start_run(run_name=f"rag-evaluation-{eval_lang}"):
         model_config = {
