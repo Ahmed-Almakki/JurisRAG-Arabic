@@ -1,3 +1,6 @@
+import mlflow
+from mlflow.entities import SpanType
+
 from ..ingestion.add_to_db import get_connection
 from ..ingestion.embedding import embedd_text
 from ..rag_config import load_rag_config
@@ -12,6 +15,7 @@ class Retriever:
         )
         self.embedding_function = embedding_function
 
+    @mlflow.trace(span_type=SpanType.RETRIEVER)
     def retrieve(
         self,
         query: str,
@@ -25,7 +29,7 @@ class Retriever:
         its inverse ranking score as ``similarity``.
         """
         if top_k is None:
-            top_k = load_rag_config()["retrieval"]["top_k"]
+            top_k = load_rag_config()["embedding_model"]["top_k"]
         if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k < 1:
             raise ValueError("top_k must be at least 1")
         if language not in (None, "ar", "en"):

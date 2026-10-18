@@ -104,7 +104,7 @@ class RAG:
         context_block = json.dumps(
             format_context_block(retrieved_docs), ensure_ascii=False, indent=2
         )
-        print("context_block", context_block)
+
         # 3. Format user message template
         user_content = config["user_message_template"].format(
             context_block=context_block, query=request.query
@@ -114,11 +114,11 @@ class RAG:
             SystemMessage(content=config["system_prompt"]),
             HumanMessage(content=user_content),
         ]
-        print("messages", messages)
+
         # 4. Invoke LLM and log completion
         logger.info("Invoking LLM via Groq API...")
         response = self.llm.invoke(messages)
-        print("response", response)
+
         logger.info("LLM generation complete. Returning raw string response.")
 
         return response.content

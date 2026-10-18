@@ -1,0 +1,282 @@
+[
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم الضرائب والرسوم المستحقة للدولة؟",
+      "question_en": "What is the limitation period for taxes and dues owed to the State?"
+    },
+    "expectation": {
+      "expected_ar": "مدة تقادم الضرائب والرسوم المستحقة للدولة هي ثلاث سنوات، ويبدأ سريان التقادم في الضرائب والرسوم السنوية من نهاية السنة التي تستحق عنها.",
+      "expected_en": "The term of prescription for taxes and dues owing to the State is three years, commencing from the end of the year for which they were due."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٧٧ ١ تتقادم بثالث سنوات الضرائب والرسوم المستحقة للدولة ويبدأ سريان التقادم في الضرائب والرسوم السنوية من نهاية السنة التي تستحق عنها",
+      "text_en": "Article 377 The term of prescription for taxes and dues owing to the State is three years. The term of prescription for taxes and annual dues commences to run from the end of the year for which they were due"
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم حقوق التجار والصناع عن الأشياء التي يوردونها؟",
+      "question_en": "What is the limitation period for claims by merchants and manufacturers for goods supplied?"
+    },
+    "expectation": {
+      "expected_ar": "تتقادم بسنة واحدة حقوق التجار والصناع عن أشياء وردوها لأشخاص لا يتجرون في هذه الأشياء.",
+      "expected_en": "The period of prescription is one year for claims of merchants and manufacturers regarding items supplied to non-traders."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٧٨ ١( تتقادم بسنة واحدة الحقوق اآلتية أ حقوق التجار والصناع عن أشياء وردها ألشخاص ال يتجرون في هذه الأشياء",
+      "text_en": "Article 378 The term of prescription is one year for the following rights of action: a- rights of action of merchants and manufacturers in respect of things supplied to persons who do not trade in these articles"
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم حقوق العمال والخدم والأجراء؟",
+      "question_en": "What is the limitation period for claims regarding wages of workmen, servants, and wage earners?"
+    },
+    "expectation": {
+      "expected_ar": "تتقادم حقوق العمال والخدم والأجراء من أجور يومية وغير يومية ومن ثمن ما قاموا به من توريدات بسنة واحدة.",
+      "expected_en": "Rights of workmen, servants, and wage earners regarding daily or non-daily pay and supplies provided are prescribed after one year."
+    },
+    "ground_truth": {
+      "text_ar": "ب حقوق العمال والخدم واألجراء من أجور يومية وغير يومية ومن ثمن ما قاموا به من توريدات تتقادم بسنة واحدة.",
+      "text_en": "b- the rights of action of workmen, servants, wage earners, in respect of their pay, daily or otherwise, and for the cost of supplies provided by them."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هو الإجراء الوجوبي الذي يفرضه القانون على من يتمسك بالتقادم الحولي (سنة واحدة)؟",
+      "question_en": "What obligatory procedure does the law impose on a person claiming the one-year prescription?"
+    },
+    "expectation": {
+      "expected_ar": "يجب على من يتمسك بأن الحق قد تقادم بسنة أن يحلف اليمين على أنه أدى الدين فعلاً، ويوجّه القاضي هذه اليمين من تلقاء نفسه.",
+      "expected_en": "A person claiming the one-year prescription must take an oath that they have actually paid the debt, passed by the judge of their own accord."
+    },
+    "ground_truth": {
+      "text_ar": "٢ ويجب على من يتمسك بأن الحق قد تقادم بسنة أن يحلف اليمين على أنه أدي الدين فعال وهذه اليمين يوجهها القاضي من تلقاء نفسه",
+      "text_en": "When a person claims this prescription of one year, he must take oath that he has actually paid the debt. The Judge will of his own accord pass the oath."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة التقادم الجديدة عند انقطاع التقادم بإقرار المدين في الدين الذي يتقادم بسنة؟",
+      "question_en": "What is the new prescription period when a one-year debt prescription is interrupted by the debtor's admission?"
+    },
+    "expectation": {
+      "expected_ar": "إذا كان الدين مما يتقادم بسنة واحدة وانقطع تقادمه بإقرار المدين، كانت مدة التقادم الجديد خمس عشرة سنة.",
+      "expected_en": "When a debt prescribed after one year has been interrupted by the admission of the debtor, the new prescription period is fifteen years."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٥ ٢ على أنه إذا حكم بالدين وحاز الحكم قوة األمر المقضي أو إذا كان الدين مما يتقادم بسنة واحدة وانقطع تقادمه بإقرار المدين ، كانت مدة التقادم الجديد خمس عشرة سنة",
+      "text_en": "Article 385 When the debt has been confirmed by a final judgment or when, in the case of a debt prescribed after one year, the prescription has been interrupted by the admission of the debtor, the term of the new prescription will be fifteen years."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة التقادم المكسب للحيازة المقترنة بحسن النية والسبب الصحيح على عقار؟",
+      "question_en": "What is the acquisitive prescription period for property possession with good faith and a valid title?"
+    },
+    "expectation": {
+      "expected_ar": "إذا وقعت الحيازة على عقار وكانت مقترنة بحسن النية ومستندة إلى سبب صحيح، فإن مدة التقادم المكسب تكون خمس سنوات.",
+      "expected_en": "When a person holds possession of real property in good faith and by virtue of a valid title, the acquisitive prescription period is five years."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٩٦٩ ١ إذا وقعت الحيازة على عقار أو على حق عيني عقاري وكانت مقترنة بحسن النية ومستندة فى الوقت ذاته إلى سبب صحيح ، فإن مدة التقادم المكسب تكون خمس سنوات",
+      "text_en": "Article 969 When a person remains in possession, in good faith and by virtue of a just title, of an immovable or of a real right over an immovable, the period of acquisitive prescription is five years."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة الحيازة اللازمة لكسب حقوق الإرث بالتقادم؟",
+      "question_en": "What is the possession period required to acquire hereditary rights by prescription?"
+    },
+    "expectation": {
+      "expected_ar": "لا تكسب حقوق الإرث بالتقادم إلا إذا دامت الحيازة مدة ثلاث وثلاثين سنة.",
+      "expected_en": "Hereditary rights are only acquired by prescription by continuous possession for thirty-three years."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٩٧٠ فى جميع األحوال ال تكسب حقوق اإلرث بالتقادم إال إذا دامت الحيازة مدة ثالث وثالثين سنة",
+      "text_en": "Article 970 In any case, wakf property and hereditary rights are only acquired by prescription by possession for thirty-three years."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "هل يجوز تملك الأموال الخاصة المملوكة للدولة أو الأشخاص الاعتبارية بالتقادم؟",
+      "question_en": "Can private property owned by the State or public entities be acquired by prescription?"
+    },
+    "expectation": {
+      "expected_ar": "لا يجوز تملك الأموال الخاصة المملوكة للدولة أو الأشخاص الاعتبارية العامة أو الهيئات العامة وأموال الأوقاف الخيرية بالتقادم.",
+      "expected_en": "Private property belonging to the State, public legal entities, public organizations, or charitable endowments cannot be acquired by prescription."
+    },
+    "ground_truth": {
+      "text_ar": "ال يجوز تملك األموال الخاصة المملوكة للدولة أو لألشخاص االعتبارية العامة وكذلك أموال الوحدات االقتصادية... بالتقادم",
+      "text_en": "No private property belonging to the State or to public legal entities, public institutions, or charitable endowments may be acquired by prescription."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة التقادم العامة للالتزامات في القانون المدني؟",
+      "question_en": "What is the general prescription period for obligations in Civil Law?"
+    },
+    "expectation": {
+      "expected_ar": "يتقادم الالتزام بانقضاء خمس عشرة سنة ما لم يوجد نص خاص بغير ذلك في القانون.",
+      "expected_en": "An obligation is prescribed by the expiry of fifteen years, unless a special provision in the law provides otherwise."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٧٤ يتقادم الالتزام بانقضاء خمس عشرة سنة ما لم يوجد نص خاص بغير ذلك في القانون.",
+      "text_en": "Article 374 An obligation is prescribed by the expiry of fifteen years, unless a special provision in the law provides otherwise."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم حقوق الأطباء والصيادلة والمحامين عن أعمال مهنتهم؟",
+      "question_en": "What is the limitation period for claims by doctors, pharmacists, and lawyers for professional services?"
+    },
+    "expectation": {
+      "expected_ar": "تتقادم بخمس سنوات حقوق الأطباء والصيادلة والمهندسين والمحامين والخبراء وسائر من يمارسون مهنة حرة عن أعمال مهنتهم.",
+      "expected_en": "Claims of doctors, pharmacists, engineers, advocates, and experts for professional services rendered are prescribed after five years."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٧٦ تتقادم بخمس سنوات حقوق الأطباء والصيادلة والمهندسين والمحامين والخبراء وسائر من يمارسون مهنة حرة عن أعمال مهنتهم.",
+      "text_en": "Article 376 The rights of action of doctors, pharmacists, engineers, advocates, experts, and all persons practicing a free profession are prescribed after five years."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم الحقوق الدورية المتجددة كأجرة المباني والأراضي؟",
+      "question_en": "What is the prescription period for periodically recurring rights like building rents?"
+    },
+    "expectation": {
+      "expected_ar": "يتقادم بخمس سنوات كل حق دوري متجدد كأجرة المباني والأراضي الزراعية والفيات والأجور والإيرادات المرتبة.",
+      "expected_en": "Every periodically recurring right, such as rent for buildings and agricultural land, salaries, and wages, is prescribed after five years."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٧٥ ١ يتقادم بخمس سنوات كل حق دوري متجدد كأجرة المباني والأراضي الزراعية ومقابل الحكر وكالمرتبات والأجور والإيرادات المرتبة.",
+      "text_en": "Article 375 Every periodically recurring right, such as rent of buildings and agricultural land, salaries, wages, and pensions, is prescribed after five years."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "متى يبدأ سريان التقادم في الرسوم المستحقة عن الأوراق القضائية؟",
+      "question_en": "When does the prescription period start running for legal document fees?"
+    },
+    "expectation": {
+      "expected_ar": "يبدأ سريان التقادم في الرسوم المستحقة عن الأوراق القضائية من تاريخ إنهاء المرافعة في الدعوى، أو من تاريخ تحريرها إذا لم تحصل مرافعة.",
+      "expected_en": "Prescription for legal document fees commences from the date of termination of the court hearing, or from drawing up documents if no hearing occurs."
+    },
+    "ground_truth": {
+      "text_ar": "وفي الرسوم المستحقة عن األوراق القضائية من تاريخ إنهاء المرافعة في الدعوى التي حررت في شانها هذه األوراق ، أو من تاريخ تحريرها إذا لم تحصل مرافعة",
+      "text_en": "that for fees for legal documents from the date of termination of the hearing of the case in respect of which such documents were prepared"
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم الحق في المطالبة برد الضرائب والرسوم التي دفعت بغير حق؟",
+      "question_en": "What is the limitation period to claim repayment of unduly paid taxes and dues?"
+    },
+    "expectation": {
+      "expected_ar": "يتقادم بثلاث سنوات الحق في المطالبة برد الضرائب والرسوم التي دفعت بغير حق، ويبدأ سريان التقادم من يوم دفعها.",
+      "expected_en": "The right to claim repayment of unduly paid taxes and dues is prescribed after three years, running from the date of payment."
+    },
+    "ground_truth": {
+      "text_ar": "٢ ويتقادم بثالث سنوات أيضا الحق في المطالبة برد الضرائب والرسوم التي دفعت بغير حق ويبدأ سريان التقادم من يوم دفعها",
+      "text_en": "The term of prescription of the right to claim repayment of taxes and dues unduly paid is also three years. This prescription runs from the date of payment."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "كيف تحسب مواعيد التقادم في القانون المدني؟",
+      "question_en": "How are prescription periods calculated in Civil Law?"
+    },
+    "expectation": {
+      "expected_ar": "يحسب ميعاد التقادم بالأيام لا بالساعات، ولا يحسب اليوم الأول، ويتم التقادم بانقضاء اليوم الأخير منه.",
+      "expected_en": "The prescription period is calculated in days, not hours. The first day is omitted, and prescription completes upon expiry of the last day."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨١ يحسب ميعاد التقادم بالأيام لا بالساعات ولا يحسب اليوم الأول ويتم التقادم بانقضاء اليوم الأخير منه.",
+      "text_en": "Article 381 The period of prescription is calculated in days, not hours. The first day is omitted, and prescription is complete upon expiry of the last day."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "متى ينقطع التقادم في الالتزامات؟",
+      "question_en": "When is prescription interrupted in obligations?"
+    },
+    "expectation": {
+      "expected_ar": "ينقطع التقادم بالمطالبة القضائية ولو رفعت إلى محكمة غير مختصة، وبالتنبيه أو بالحجز وبأي إجراء يفيد التمسك بالحق.",
+      "expected_en": "Prescription is interrupted by judicial demand even before a court lacking jurisdiction, service of notice, attachment, or any act asserting the right."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٣ ينقطع التقادم بالمطالبة القضائية ولو رفعت الدعوى إلى محكمة غير ذات اختصاص، وبالتنبيه أو بالحجز وبأي إجراء يفيد التمسك بالحق.",
+      "text_en": "Article 383 Prescription is interrupted by judicial demand, even if made before a court lacking jurisdiction, by service of a notice, or by attachment."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "هل يقضي القاضي بالتقادم من تلقاء نفسه؟",
+      "question_en": "Can the judge invoke prescription on their own initiative?"
+    },
+    "expectation": {
+      "expected_ar": "لا يجوز للمحكمة أن تقضي بالتقادم من تلقاء نفسها، بل يجب أن يكون ذلك بناءً على طلب المدين أو ذوي المصلحة.",
+      "expected_en": "The court may not invoke prescription on its own initiative; it must be raised by the debtor or an interested party."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٧ لا يجوز للمحكمة أن تقضي بالتقادم من تلقاء نفسها، بل يجب أن يكون ذلك بناء على طلب المدين أو بناء على طلب دائنيه.",
+      "text_en": "Article 387 The court may not invoke prescription on its own initiative. It must be raised by the debtor or by any interested party."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "هل يجوز للتنازل عن التقادم قبل ثبوت الحق فيه؟",
+      "question_en": "Can a person renounce prescription before the right to invoke it has accrued?"
+    },
+    "expectation": {
+      "expected_ar": "لا يجوز التنازل عن التقادم قبل ثبوت الحق فيه، كما لا يجوز الاتفاق على أن يتم التقادم في مدة تختلف عن المدة التي عينها القانون.",
+      "expected_en": "A person cannot renounce prescription before the right to invoke it has accrued, nor agree on a period different from that fixed by law."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٨ لا يجوز التنازل عن التقادم قبل ثبوت الحق فيه، كما لا يجوز الاتفاق على أن يتم التقادم في مدة تختلف عن المدة التي عينها القانون.",
+      "text_en": "Article 388 A person cannot renounce prescription before the right to invoke it has accrued, nor may parties agree on a prescription period different from that fixed by law."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هو أثر انقطاع مدة التقادم؟",
+      "question_en": "What is the effect of interrupting a prescription period?"
+    },
+    "expectation": {
+      "expected_ar": "يترتب على انقطاع التقادم سقوط المدة السابقة على الانقطاع، وتبدأ مدة تقادم جديدة تماثل مدتها مدة التقادم الأولى.",
+      "expected_en": "Interruption of prescription cancels the elapsed time prior to interruption, starting a new prescription period of identical duration."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٥ ١( إذا انقطع التقادم بدأ تقادم جديد يسري من وقت إنهاء األثر المترتب على سبب االنقطاع ، وتكون مدته هي مدة التقادم األول",
+      "text_en": "Article 385 When prescription is interrupted, a new prescription commences to run from the time that the effect of the act causing interruption has ceased."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي حالات وقف سريان التقادم في القانون المدني؟",
+      "question_en": "What are the grounds for suspending prescription in Civil Law?"
+    },
+    "expectation": {
+      "expected_ar": "لا يسري التقادم كلما وجد مانع يتعذر معه على الدائن أن يطالب بحقه ولو كان المانع أدبياً، كما لا يسري بين الزوجين أو بين الأصيل والنائب.",
+      "expected_en": "Prescription does not run whenever there is an obstacle preventing the creditor from demanding his right, even if moral, nor between spouses or principal and agent."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ٣٨٢ ١ لا يسري التقادم كلما وجد مانع يتعذر معه على الدائن أن يطالب بحقه ولو كان المانع أدبياً كما لا يسري بين الأصيل والنائب. ٢ ولا يسري التقادم فيما بين الزوجين.",
+      "text_en": "Article 382 Prescription does not run whenever there is an obstacle preventing the creditor from demanding his right, even if moral. Nor does it run between spouses."
+    }
+  },
+  {
+    "input": {
+      "question_ar": "ما هي مدة تقادم دعوى التعويض عن العمل غير المشروع؟",
+      "question_en": "What is the limitation period for tortious liability / unlawful act damages?"
+    },
+    "expectation": {
+      "expected_ar": "تسقط بالتقادم دعوى التعويض الناشئة عن العمل غير المشروع بانقضاء ثلاث سنوات من اليوم الذي علم فيه المضار بالضرر وبالشخص المسؤول عنه.",
+      "expected_en": "An action for damages arising from an unlawful act is prescribed after three years from the date the injured party became aware of the damage and the person responsible."
+    },
+    "ground_truth": {
+      "text_ar": "مادة ١٧٢ تسقط بالتقادم دعوى التعويض الناشئة عن العمل غير المشروع بانقضاء ثلاث سنوات من اليوم الذي علم فيه المضار بالضرر وبالشخص المسؤول عنه.",
+      "text_en": "Article 172 An action for damages arising from an unlawful act is prescribed after three years from the date on which the injured party became aware of the damage and of the person responsible for it."
+    }
+  }
+]

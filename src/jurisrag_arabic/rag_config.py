@@ -34,7 +34,10 @@ def load_rag_config() -> dict:
         raise TypeError(f"RAG config must contain a YAML mapping: {CONFIG_PATH}")
 
     config = _expand_environment_variables(config)
-    for section, key in (("embedding", "chunk_size"), ("retrieval", "top_k")):
+    for section, key in (
+        ("embedding_model", "chunk_size"),
+        ("embedding_model", "top_k"),
+    ):
         section_values = config.get(section)
         if not isinstance(section_values, dict):
             raise TypeError(f"RAG config section '{section}' must be a mapping")
