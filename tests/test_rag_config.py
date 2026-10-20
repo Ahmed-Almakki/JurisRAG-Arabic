@@ -5,9 +5,8 @@ def test_load_rag_config_returns_every_setting_and_expands_env(monkeypatch, tmp_
     config_path = tmp_path / "rag.yaml"
     config_path.write_text(
         """
-embedding:
+embedding_model:
   chunk_size: 240
-retrieval:
   top_k: 7
 llm:
   model_name: example/model
@@ -27,8 +26,7 @@ user_message_template: |
     config = rag_config.load_rag_config()
 
     assert config == {
-        "embedding": {"chunk_size": 240},
-        "retrieval": {"top_k": 7},
+        "embedding_model": {"chunk_size": 240, "top_k": 7},
         "llm": {
             "model_name": "example/model",
             "temperature": 0.4,

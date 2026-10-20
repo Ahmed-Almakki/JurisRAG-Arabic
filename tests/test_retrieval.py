@@ -67,7 +67,11 @@ def test_retrieve_returns_ranked_chunks_joined_with_article_metadata(monkeypatch
     )
     cursor = FakeCursor(rows=[row], columns=columns)
     connection = FakeConnection(cursor)
-    monkeypatch.setattr(retrive, "load_rag_config", lambda: {"retrieval": {"top_k": 5}})
+    monkeypatch.setattr(
+        retrive,
+        "load_rag_config",
+        lambda: {"embedding_model": {"top_k": 5}},
+    )
     retriever = retrive.Retriever(
         db_connection=connection,
         embedding_function=lambda texts: [[0.1, 0.2, 0.3]],
@@ -108,7 +112,11 @@ def test_retrieve_uses_configured_top_k_when_not_provided(monkeypatch):
         db_connection=FakeConnection(cursor),
         embedding_function=lambda texts: [[0.5]],
     )
-    monkeypatch.setattr(retrive, "load_rag_config", lambda: {"retrieval": {"top_k": 8}})
+    monkeypatch.setattr(
+        retrive,
+        "load_rag_config",
+        lambda: {"embedding_model": {"top_k": 8}},
+    )
 
     assert retriever.retrieve("query") == []
     assert cursor.params[-1] == 8

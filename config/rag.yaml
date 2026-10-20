@@ -9,7 +9,7 @@ embedding_model:
 llm:
   model_name: "openai/gpt-oss-120b"
   temperature: 0.2
-  api_key: ${OPENAI_API_KEY}
+  api_key: ${GROQ_API_KEY_RAG}
 
 system_prompt: |
   You are an Egyptian legal assistant. Answer only from the supplied legal sources.

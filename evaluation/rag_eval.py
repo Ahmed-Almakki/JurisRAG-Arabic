@@ -34,7 +34,7 @@ logger.info("Configured MLflow experiment: %s", experiment_name)
 # os.environ["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 os.environ["MLFLOW_GENAI_EVAL_MAX_WORKERS"] = "1"
-os.environ["OPENAI_API_KEY"] = os.getenv("GROQ_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("GROQ_API_KEY_EVAL")
 os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
 
 JUDGE = "openai:/openai/gpt-oss-20b"

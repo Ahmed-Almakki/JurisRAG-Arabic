@@ -1,8 +1,15 @@
+.PHONY: run up ingest add-doc test download_model eval ask_example
 
-.PHONY: mlf
+run:
+	docker compose build
+	docker compose run --rm ingestion
+	docker compose up -d
 
-ingestion:
-	python3 -m src.jurisrag_arabic.ingestion.process_docs
+up:
+	docker compose up --build -d
+
+ingest:
+	docker compose run --build --rm ingestion
 
 test:
 	python -m pytest tests
@@ -10,39 +17,17 @@ test:
 download_model:
 	HF_HUB_DISABLE_XET=1 uv run python -m scripts.download_model
 
-db:
-	docker rm -f jurisage-db || true
-	docker network inspect jurisage-network >/dev/null 2>&1 || docker network create jurisage-network
-
-	docker run -d \
-	  --network jurisage-network \
-	  --name jurisage-db \
-	  -p 5432:5432 \
-	  -e POSTGRES_DB=jurisage_db \
-	  -e POSTGRES_USER=postgres \
-	  -e POSTGRES_PASSWORD=postgres \
-	  -v pg_data:/var/lib/postgresql/data \
-	  pgvector/pgvector:pg17
-mlf:
-	set -a; . ./.env; set +a; \
-	docker rm -f mlflow 2>/dev/null || true; \
-	docker run -d \
-	  --network jurisage-network \
-	  --name mlflow \
-	  -p 5000:5000 \
-	  -e MLFLOW_BACKEND_STORE_URI="$$MLFLOW_BACKEND_STORE_URI" \
-	  -v mlflow-artifacts:/mlflow/artifacts \
-	  ghcr.io/mlflow/mlflow:latest \
-	  mlflow server \
-	  --backend-store-uri "$$MLFLOW_BACKEND_STORE_URI" \
-	  --default-artifact-root /mlflow/artifacts \
-	  --artifacts-destination /mlflow/artifacts \
-	  --serve-artifacts \
-	  --host 0.0.0.0 \
-	  --port 5000 \
-	  --allowed-hosts "*"
-run:
-	bentoml serve jurisrag_arabic.rag:RAG --reload
-
 eval:
 	python3 -m evaluation.rag_eval
+
+locst:
+# 	uv run locust -f locust.py --host http://localhost:3000
+	uv run locust -f locust.py --host http://localhost:3000 \
+	--headless -u 2 -r 1 --run-time 1m \
+	--html reports/locust_report_$(shell date +%s).html
+
+ask_example:
+	curl -N -X POST 'http://localhost:3000/ask/' \
+     -H 'accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -d '{"query": "ما هي مدة تقادم الضرائب المستحقة للدولة؟"}'

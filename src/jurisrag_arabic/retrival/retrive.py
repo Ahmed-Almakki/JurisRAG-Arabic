@@ -1,6 +1,3 @@
-import mlflow
-from mlflow.entities import SpanType
-
 from ..ingestion.add_to_db import get_connection
 from ..ingestion.embedding import embedd_text
 from ..rag_config import load_rag_config
@@ -15,7 +12,6 @@ class Retriever:
         )
         self.embedding_function = embedding_function
 
-    @mlflow.trace(span_type=SpanType.RETRIEVER)
     def retrieve(
         self,
         query: str,

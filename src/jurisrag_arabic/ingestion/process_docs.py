@@ -439,29 +439,35 @@ class Converter:
         return final_list
 
 
-if __name__ == "__main__":
+def ingest_documents() -> list[dict]:
+    """Extract, embed, and store the configured legal PDF."""
     load_dotenv()
-
-    logging.basicConfig(
-        level=os.getenv("LOG_LEVEL", "INFO").upper(),
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
     pdf_filename = os.getenv("PDF_FILENAME", "legal_doc.pdf")
     pdf_output_filename = os.getenv("PDF_OUTPUT_FILENAME", "legal_doc.json")
 
     pdf_input = PROJECT_ROOT / "data" / "raw" / pdf_filename
     json_output = PROJECT_ROOT / "data" / "processed" / pdf_output_filename
 
+    logger.info("Ingestion started for PDF %s", pdf_input)
+    converter = Converter(doc=pdf_input, path=json_output)
+    result = converter.extract_legal_document()
+    result = enrich_articles_with_embeddings(result)
+    logger.info("Initializing database")
+    init_db()
+    logger.info("Saving %d enriched articles to database", len(result))
+    insert_processed_articles(result)
+    logger.info("Ingestion completed successfully")
+    return result
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    logging.basicConfig(
+        level=os.getenv("LOG_LEVEL", "INFO").upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
     try:
-        logger.info("Ingestion started for PDF %s", pdf_input)
-        converter = Converter(doc=pdf_input, path=json_output)
-        result = converter.extract_legal_document()
-        result = enrich_articles_with_embeddings(result)
-        logger.info("Initializing database")
-        init_db()
-        logger.info("Saving %d enriched articles to database", len(result))
-        insert_processed_articles(result)
-        logger.info("Ingestion completed successfully")
+        ingest_documents()
     except Exception:
         logger.exception("Ingestion failed")
         raise

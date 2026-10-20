@@ -38,7 +38,7 @@ An article can be split into multiple chunks, with each chunk linked to the same
 
 ### Embedding Concurrency
 
-The local embedding model is protected by a thread lock to prevent multiple threads within the same Python process from running embedding operations simultaneously.
+The local embedding model is protected by a thread lock and a shared file lock. This prevents concurrent embedding calls both within a Python process and between the ingestion and API containers. Docker mounts the processed-data directory into both containers so they share the lock file.
 
 This helps control resource usage on a computer with limited hardware. However, the lock does not coordinate embedding operations across separate Python processes.
 
@@ -70,18 +70,30 @@ The script also uses a single evaluation worker and short pauses between request
 
 ### API Requirements for Evaluation and RAG
 
-**You need valid API keys for both Groq and Gemini to run the evaluation and rag retrival successfully.**
+**You need a valid Groq API key to run the RAG system and the evaluation.**
 
 - **Groq API key:** Used to generate answers.
-- **Gemini API key:** Used by the LLM judge to evaluate the results.
+- Groq is also used by the evaluation judges through its OpenAI-compatible API.
 
-Both APIs are subject to their respective rate limits, which may affect the number of examples that can be evaluated in a single run.
+Groq's free tier is subject to rate limits, which may affect the number of examples that can be evaluated in a single run.
 
 To run the evaluation, use:
 
 ```bash
 python evaluation/rag_eval.py
 ```
+
+### Performance & Load Testing Reports
+
+When load-testing the RAG pipeline using Locust, system performance and stability are heavily tied to external cloud API limits:
+
+* **Rate Limit Constraints & Concurrency (`-u 2 -r 1`):** 
+  Because the system relies on Groq's free-tier API, sending high request volumes in parallel quickly exhausts the Tokens Per Minute (TPM) quota. To evaluate baseline system performance without triggering rate-limit errors, testing with low concurrency (e.g., `-u 2 -r 1` or 2 users with a spawn rate of 1) is ideal. Higher user counts immediately breach the free tier limit, causing HTTP `429 Too Many Requests` errors.
+* **Observed Performance:** 
+  Under controlled, low-concurrency testing, the system demonstrates strong efficiency:
+  * **Time to First Token (TTFT):** A median of **~1.4 seconds**, indicating fast local vector retrieval and quick initial generation startup.
+  * **End-to-End Latency:** Average completion times hover around **2.1 to 2.5 seconds**.
+  * **Reliability:** When kept within rate limits, error rates drop to **0%**.
 
 ## Configuration
 
@@ -104,7 +116,6 @@ Before running the project, ensure you have:
 - The required Python dependencies.
 - The local BGE-M3 quantized model file.
 - A valid Groq API key for answer generation.
-- A valid Gemini API key for evaluation.
 
 ## Running the Project
 
@@ -112,7 +123,7 @@ Before running the project, ensure you have:
 
 Install Python 3.13 or newer and the project's required dependencies.
 
-Configure the necessary environment variables for PostgreSQL and the Groq API. For evaluation, configure the Gemini API key as well.
+Configure the necessary environment variables for PostgreSQL and the Groq API. The evaluation uses the same Groq API key.
 
 ### 2. Set Up the Database
 
@@ -136,13 +147,89 @@ Ensure that the source PDFs are available in the locations expected by the inges
 
 ### 5. Run Evaluation
 
-After configuring both the Groq and Gemini API keys, run:
+After configuring the Groq API key, run:
 
 ```bash
 python evaluation/rag_eval.py
 ```
 
 The script evaluates the generated answers against the golden dataset. Due to free-tier API limits, the number of examples evaluated in one run may be limited.
+
+## Run with Docker Compose
+
+Docker Compose starts PostgreSQL (`jurisage-db`), MLflow (`mlflow`), and the RAG API. The ingestion container uses the same `jurisrag-arabic:local` image as the API and runs when requested. Existing PostgreSQL and MLflow data are kept in the `pg_data` and `mlflow-artifacts` volumes.
+
+Prepare the environment file, model, and first source PDF:
+
+```bash
+cp .env.example .env
+# Edit .env and set GROQ_API_KEY and the database/MLflow settings.
+# Place the BGE-M3 GGUF file in models/bge-m3/ and the source PDF in data/raw/.
+make run
+```
+
+`make run` starts PostgreSQL, ingests the configured PDF, and then starts MLflow and the RAG API. Use `make up` or `docker compose up -d` for later starts without re-ingesting the PDF.
+
+The model and data directories are mounted from the host; the large GGUF model is not copied into the image. The default PDF name is `legal_doc.pdf`. Set `PDF_FILENAME` in `.env` to use a different file. Compose binds the API to `http://localhost:3000` by default; change `RAG_PORT` to use another host port.
+
+To copy and ingest another PDF later, run:
+
+```bash
+make add-doc DOC=/path/to/new-document.pdf
+```
+
+Re-ingesting a document already stored in the database can create duplicate records.
+
+Check service status and logs:
+
+```bash
+docker compose ps
+docker compose logs -f db mlflow rag
+```
+
+The RAG API exposes liveness at `/livez`, readiness at `/readyz`, and Prometheus metrics at `/metrics`. BentoML provides these monitoring endpoints and metrics by default. [BentoML metrics documentation](https://docs.bentoml.com/en/latest/build-with-bentoml/observability/metrics.html) · [BentoML health endpoint documentation](https://docs.bentoml.com/en/latest/build-with-bentoml/observability/monitoring-and-data-collection.html)
+
+MLflow tracks evaluation runs. RAG serving and retrieval do not import or call MLflow.
+
+Send a question with curl:
+
+```bash
+curl -X POST http://localhost:3000/ask/ \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"What is the legal rule for this issue?"}'
+```
+
+Check metrics with:
+
+```bash
+curl http://localhost:3000/metrics
+```
+
+If ingestion fails, resolve the error and run `make ingest` to retry the configured PDF. Use `make add-doc DOC=/path/to/document.pdf` to ingest another PDF.
+
+### Load Test the RAG API
+
+Install the development dependencies, then start the API with `docker compose up -d rag`.
+Run Locust from the project root:
+
+```bash
+uv sync --group dev
+uv run locust -f locust.py --headless -u 5 -r 1 --run-time 2m
+```
+
+The default target is `http://localhost:3000`. Set `LOCUST_HOST` or pass `--host` to target another server. To use the Locust web UI instead of headless mode, omit `--headless`, `-u`, `-r`, and `--run-time`, then open `http://localhost:8089`.
+
+Each simulated user sends a legal question every 1–3 seconds. Requests invoke retrieval and the Groq LLM, so the measured latency includes both; start with a low user count and account for provider rate limits and API costs before increasing load.
+
+## Tests and Continuous Integration
+
+Run the tests locally with:
+
+```bash
+uv run pytest
+```
+
+GitHub Actions runs the test suite on pushes and pull requests. The workflow starts a temporary PostgreSQL database with pgvector and runs a system integration test through article chunking and embedding orchestration, database storage, vector retrieval, and RAG prompt creation. It uses a fixed test embedding and a stub language model, so it does not need the local embedding model or API keys.
 
 ## Main Project Files
 

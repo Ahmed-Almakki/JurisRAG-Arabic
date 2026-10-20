@@ -1,9 +1,8 @@
+import fcntl
 import logging
 import re
 import threading
 from pathlib import Path
-
-from llama_cpp import Llama
 
 from ..rag_config import load_rag_config
 
@@ -12,9 +11,6 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 MODEL_PATH = PROJECT_ROOT / "models" / "bge-m3" / "bge-m3-Q8_0.gguf"
-
-if not MODEL_PATH.is_file():
-    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
 model = None
 _model_lock = threading.Lock()
@@ -26,6 +22,8 @@ def _get_model():
     if model is None:
         if not MODEL_PATH.is_file():
             raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
+        from llama_cpp import Llama
+
         model = Llama(model_path=str(MODEL_PATH), embedding=True, verbose=False)
     return model
 
@@ -93,6 +91,13 @@ def embedd_text(texts: list[str]) -> list[list[float]]:
         return []
 
     with _model_lock:
-        result = _get_model().create_embedding(texts)
+        lock_path = PROJECT_ROOT / "data" / "processed" / "embedding.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("w") as lock_file:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                result = _get_model().create_embedding(texts)
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
     return [item["embedding"] for item in result["data"]]
