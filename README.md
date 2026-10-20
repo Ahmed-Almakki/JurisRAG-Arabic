@@ -150,7 +150,8 @@ Ensure that the source PDFs are available in the locations expected by the inges
 After configuring the Groq API key, run:
 
 ```bash
-python evaluation/rag_eval.py
+make eval
+# Runs: python evaluation/rag_eval.py
 ```
 
 The script evaluates the generated answers against the golden dataset. Due to free-tier API limits, the number of examples evaluated in one run may be limited.
@@ -168,17 +169,14 @@ cp .env.example .env
 make run
 ```
 
-`make run` starts PostgreSQL, ingests the configured PDF, and then starts MLflow and the RAG API. Use `make up` or `docker compose up -d` for later starts without re-ingesting the PDF.
-
-The model and data directories are mounted from the host; the large GGUF model is not copied into the image. The default PDF name is `legal_doc.pdf`. Set `PDF_FILENAME` in `.env` to use a different file. Compose binds the API to `http://localhost:3000` by default; change `RAG_PORT` to use another host port.
-
-To copy and ingest another PDF later, run:
+`make run` starts PostgreSQL, ingests the configured PDF, and then starts MLflow and the RAG API. Use `make up` to start the services later without re-ingesting:
 
 ```bash
-make add-doc DOC=/path/to/new-document.pdf
+make up
+# Runs: docker compose up --build -d
 ```
 
-Re-ingesting a document already stored in the database can create duplicate records.
+The model and data directories are mounted from the host; the large GGUF model is not copied into the image.
 
 Check service status and logs:
 
@@ -196,7 +194,7 @@ Send a question with curl:
 ```bash
 curl -X POST http://localhost:3000/ask/ \
   -H 'Content-Type: application/json' \
-  -d '{"query":"What is the legal rule for this issue?"}'
+  -d '{"query":"ما هي مدة تقادم الضرائب المستحقة للدولة؟"}'
 ```
 
 Check metrics with:
@@ -209,15 +207,14 @@ If ingestion fails, resolve the error and run `make ingest` to retry the configu
 
 ### Load Test the RAG API
 
-Install the development dependencies, then start the API with `docker compose up -d rag`.
-Run Locust from the project root:
+Start the services with `make up`, then run the configured Locust load test:
 
 ```bash
 uv sync --group dev
-uv run locust -f locust.py --headless -u 5 -r 1 --run-time 2m
+make locst
 ```
 
-The default target is `http://localhost:3000`. Set `LOCUST_HOST` or pass `--host` to target another server. To use the Locust web UI instead of headless mode, omit `--headless`, `-u`, `-r`, and `--run-time`, then open `http://localhost:8089`.
+`make locst` runs a headless test with two users for one minute against `http://localhost:3000`. It writes an HTML report to `reports/locust_report_<timestamp>.html`.
 
 Each simulated user sends a legal question every 1–3 seconds. Requests invoke retrieval and the Groq LLM, so the measured latency includes both; start with a low user count and account for provider rate limits and API costs before increasing load.
 
