@@ -1,5 +1,6 @@
 """Integration test for ingestion, PostgreSQL retrieval, and RAG answering."""
 
+import asyncio
 import os
 import uuid
 
@@ -75,11 +76,10 @@ def test_ingestion_retrieval_and_rag_flow(postgres_connection, monkeypatch):
         def __init__(self):
             self.messages = None
 
-        def invoke(self, messages):
+        async def astream(self, messages):
             self.messages = messages
-            return type(
-                "LLMResponse", (), {"content": "Answer based on article 987654."}
-            )()
+            yield type("LLMChunk", (), {"content": "Answer based on "})()
+            yield type("LLMChunk", (), {"content": "article 987654."})()
 
     fake_llm = FakeLLM()
 
@@ -105,7 +105,18 @@ def test_ingestion_retrieval_and_rag_flow(postgres_connection, monkeypatch):
         service = service_class.__new__(service_class)
         service.retriever = retriever
         service.llm = fake_llm
-        answer = service_class.ask.func(service, QueryRequest(query=marker))
+
+        async def collect_answer():
+            return "".join(
+                [
+                    chunk
+                    async for chunk in service_class.ask.func(
+                        service, QueryRequest(query=marker)
+                    )
+                ]
+            )
+
+        answer = asyncio.run(collect_answer())
 
         assert answer == "Answer based on article 987654."
         assert fake_llm.messages is not None
