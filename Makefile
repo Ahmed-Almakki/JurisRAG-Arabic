@@ -12,7 +12,7 @@ ingest:
 	docker compose run --build --rm ingestion
 
 test:
-	python -m pytest tests
+	uv run pytest
 
 download_model:
 	HF_HUB_DISABLE_XET=1 uv run python -m scripts.download_model

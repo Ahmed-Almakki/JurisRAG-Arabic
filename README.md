@@ -223,7 +223,8 @@ Each simulated user sends a legal question every 1–3 seconds. Requests invoke 
 Run the tests locally with:
 
 ```bash
-uv run pytest
+make test
+# Runs: uv run pytest
 ```
 
 GitHub Actions runs the test suite on pushes and pull requests. The workflow starts a temporary PostgreSQL database with pgvector and runs a system integration test through article chunking and embedding orchestration, database storage, vector retrieval, and RAG prompt creation. It uses a fixed test embedding and a stub language model, so it does not need the local embedding model or API keys.
