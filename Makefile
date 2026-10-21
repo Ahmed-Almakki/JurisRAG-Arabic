@@ -26,8 +26,17 @@ locst:
 	--headless -u 2 -r 1 --run-time 1m \
 	--html reports/locust_report_$(shell date +%s).html
 
-ask_example:
+ask_example_ar:
 	curl -N -X POST 'http://localhost:3000/ask/' \
      -H 'accept: application/json' \
      -H 'Content-Type: application/json' \
      -d '{"query": "ما هي مدة تقادم الضرائب المستحقة للدولة؟"}'
+
+ask_example_en:
+	curl -N -X POST 'http://localhost:3000/ask/' \
+     -H 'accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -d '{"query": "What is the statute of limitations for taxes owed to the state?"}'
+
+
+	 

@@ -50,9 +50,22 @@ services:
     environment:
       MLFLOW_BACKEND_STORE_URI: ${MLFLOW_BACKEND_STORE_URI:?Set MLFLOW_BACKEND_STORE_URI in .env}
     command:
-      ["mlflow", "server", "--backend-store-uri", "${MLFLOW_BACKEND_STORE_URI}", "--default-artifact-root",
-        "/mlflow/artifacts", "--artifacts-destination", "/mlflow/artifacts", "--serve-artifacts",
-        "--host", "0.0.0.0", "--port", "5000", "--allowed-hosts", "*",
+      [
+        "mlflow",
+        "server",
+        "--backend-store-uri",
+        "${MLFLOW_BACKEND_STORE_URI}",
+        "--default-artifact-root",
+        "/mlflow/artifacts",
+        "--artifacts-destination",
+        "/mlflow/artifacts",
+        "--serve-artifacts",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "5000",
+        "--allowed-hosts",
+        "*",
       ]
     ports:
       - "5000:5000"
@@ -73,23 +86,93 @@ services:
   rag:
     <<: *jurisrag-app
     command:
-      ["bentoml", "serve","jurisrag_arabic.rag:RAG", "--host", "0.0.0.0", "--port", "3000",]
+      [
+        "bentoml",
+        "serve",
+        "jurisrag_arabic.rag:RAG",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "3000",
+      ]
     ports:
       - "127.0.0.1:${RAG_PORT:-3000}:3000"
     healthcheck:
       test:
-        ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/livez', timeout=4)",]
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/livez', timeout=4)",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 60s
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--web.enable-remote-write-receiver'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - jurisage-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --tries=1 -O- http://localhost:9090/-/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - jurisage-network
+    restart: unless-stopped
+
+  nodeexporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - jurisage-network
+
 volumes:
   pg_data:
     name: pg_data
   mlflow_artifacts:
     name: mlflow-artifacts
+  grafana-data:
+    name: grafana-data
+  prometheus_data:
+    name: prometheus_data
 
 networks:
   jurisage-network:
