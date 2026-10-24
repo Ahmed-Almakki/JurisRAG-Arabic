@@ -11,6 +11,9 @@ up:
 ingest:
 	docker compose run --build --rm ingestion
 
+pull:
+	curl -L -o service-account.json "https://www.dropbox.com/scl/fi/6p5fdnhlix0rp8z7qvu6x/service-account.json?rlkey=52x2thyogerdknghidwn8nht8&st=j6spbjhf&dl=1" && dvc pull
+
 test:
 	uv run pytest
 
