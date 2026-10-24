@@ -1,4 +1,10 @@
 [core]
     remote = gdrive
+
 ['remote "gdrive"']
     url = gdrive://10maMIzf_5YR3_CRXARHsz2nIw69ZPaO_
+    gdrive_use_service_account = true
+
+['remote "dbrij"']
+    url = s3://jurisrag-dvc-data
+    endpointurl = https://s3.dbrij.com
