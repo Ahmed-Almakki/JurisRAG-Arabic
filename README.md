@@ -10,16 +10,23 @@ The project has three main steps:
 2. **Embedding and Storage:** Splits legal text into smaller chunks, generates embeddings, and stores the text, metadata, and embeddings in PostgreSQL with pgvector.
 3. **Retrieval and Answer Generation:** Converts a user's question into an embedding, retrieves the most similar text chunks, and sends the relevant legal context to a language model to generate an answer with article citations.
 
-## Development Environment
+## Models and API Keys
 
-I develop this project on a computer with an Intel Core i7 processor and an NVIDIA GTX 1050 graphics card. Because the hardware has limited resources for running AI models, I use a combination of local inference and cloud APIs.
+The project uses one local model and one cloud model. This setup keeps the embedding work on the project computer, while a cloud service handles the larger answer-generation model.
 
-- **Embedding Model:** Quantized BGE-M3, run locally using `llama.cpp`.
-- **Language Model:** Groq API with a free-tier API key for answer generation.
-- **Database:** PostgreSQL with the pgvector extension.
+- **Local embedding model:** Quantized BGE-M3 (`bge-m3-Q8_0.gguf`) runs on the project computer through `llama.cpp`. It turns legal text and questions into vectors for search. Running it locally avoids sending embedding requests to a cloud embedding service. The quantized model is smaller than the full model, which helps it run on computers with limited resources.
+- **Cloud answer model:** The RAG service sends the question and retrieved legal text to `openai/gpt-oss-120b` through the Groq API. Answer generation needs more compute than embedding, and the development computer has limited GPU resources. Using Groq means the project does not need to run this large model locally. It does require internet access, a Groq API key, and is subject to Groq rate limits.
+- **Database:** PostgreSQL with the pgvector extension runs in Docker Compose.
 - **Python:** 3.13 or newer.
 
-Using `llama.cpp` allows me to generate embeddings locally without relying on a cloud embedding API. Groq handles answer generation, reducing the computational requirements on my computer. However, free API tiers have rate limits that can affect evaluation and testing.
+Create two Groq API keys so RAG requests and evaluation requests can be managed separately. Put them in the local `.env` file:
+
+| Variable | Used for |
+|---|---|
+| `GROQ_API_KEY_RAG` | The application uses this key to generate answers through Groq. |
+| `GROQ_API_KEY_EVAL` | The evaluation script uses this key for its answer-quality judges. |
+
+The evaluation key is only needed when running evaluation. Never commit `.env` or share either key.
 
 ## Ingestion and Database
 
@@ -70,12 +77,9 @@ The script also uses a single evaluation worker and short pauses between request
 
 ### API Requirements for Evaluation and RAG
 
-**You need a valid Groq API key to run the RAG system and the evaluation.**
+The RAG application and evaluation each use a Groq API key. Set `GROQ_API_KEY_RAG` for the application and `GROQ_API_KEY_EVAL` for evaluation in `.env`.
 
-- **Groq API key:** Used to generate answers.
-- Groq is also used by the evaluation judges through its OpenAI-compatible API.
-
-Groq's free tier is subject to rate limits, which may affect the number of examples that can be evaluated in a single run.
+Groq's free tier has rate limits, which may limit the number of evaluation examples that can run at one time.
 
 To run the evaluation, use:
 
@@ -111,70 +115,82 @@ Database credentials and API keys are read from environment variables, typically
 
 Before running the project, ensure you have:
 
-- Python 3.13 or newer.
-- PostgreSQL with the pgvector extension.
-- The required Python dependencies.
-- The local BGE-M3 quantized model file.
-- A valid Groq API key for answer generation.
+- Python 3.13 or newer and `uv` for the project tools.
+- Docker with the Docker Compose plugin.
+- An internet connection to download the documents, embedding model, and call Groq.
 
-## Running the Project
+## Instructor Quick Start
 
-### 1. Configure the Environment
+Run these steps from a terminal. Replace `https://github.com/Ahmed-Almakki/JurisRAG-Arabic.git` with the URL provided by the instructor.
 
-Install Python 3.13 or newer and the project's required dependencies.
+### 1. Clone the Project and Install Dependencies
 
-Configure the necessary environment variables for PostgreSQL and the Groq API. The evaluation uses the same Groq API key.
-
-### 2. Set Up the Database
-
-Start PostgreSQL and ensure the pgvector extension is installed and enabled in the target database.
-
-Configure the database connection details using your environment variables.
-
-### 3. Prepare the Embedding Model
-
-Download or place the quantized BGE-M3 model in the expected local model directory. Ensure that the configured model path matches the actual location of the model file.
-
-### 4. Run Document Ingestion
-
-To process the legal documents and store their articles and embeddings in the database, run:
+Clone the repository, enter its folder, and install the Python dependencies. `uv sync` also installs DVC, which is needed to download the project data.
 
 ```bash
-python -m jurisrag_arabic.ingestion.process_docs
+git clone https://github.com/Ahmed-Almakki/JurisRAG-Arabic.git
+cd JurisRAG-Arabic
+uv sync
 ```
 
-Ensure that the source PDFs are available in the locations expected by the ingestion pipeline.
+### 2. Configure the Environment
 
-### 5. Run Evaluation
-
-After configuring the Groq API key, run:
-
-```bash
-make eval
-# Runs: python evaluation/rag_eval.py
-```
-
-The script evaluates the generated answers against the golden dataset. Due to free-tier API limits, the number of examples evaluated in one run may be limited.
-
-## Run with Docker Compose
-
-Docker Compose starts PostgreSQL (`jurisage-db`), MLflow (`mlflow`), and the RAG API. The ingestion container uses the same `jurisrag-arabic:local` image as the API and runs when requested. Existing PostgreSQL and MLflow data are kept in the `pg_data` and `mlflow-artifacts` volumes.
-
-Prepare the environment file, model, and first source PDF:
+Create your local environment file from the example:
 
 ```bash
 cp .env.example .env
-# Edit .env and set GROQ_API_KEY and the database/MLflow settings.
-# Place the BGE-M3 GGUF file in models/bge-m3/ and the source PDF in data/raw/.
+```
+
+Edit `.env` and set `DB_PASSWORD`, `MLFLOW_BACKEND_STORE_URI`, and both Groq keys. Create two keys in Groq: put the key for application answers in `GROQ_API_KEY_RAG`, and the key for evaluation in `GROQ_API_KEY_EVAL`. The evaluation key is only needed if you will run `make eval`. Keep `.env` private and do not commit it.
+
+### 3. Download the Documents and Embedding Model
+
+Run:
+
+```bash
+make pull
+make download_model
+```
+
+`make pull` downloads `service-account.json` and then runs `dvc pull`. The service-account file lets DVC access the Google Drive remote that stores the project documents. Keep this file private and do not commit it. `dvc pull` downloads the tracked data into the repository. `make download_model` downloads the local BGE-M3 model used by ingestion and the API.
+
+### 4. Ingest and Start the Application
+
+Choose one of these two options:
+
+**Option A: Run ingestion, then start the app.** Choose this when you want to run or retry ingestion separately. Run:
+
+```bash
+make ingest
+make up
+```
+
+The first command ingests the documents into the database. After it succeeds, the second command starts the API and other services without repeating ingestion.
+
+**Option B: Run everything with one command.** Choose this for the normal full setup. It builds the Docker image, runs ingestion, and starts the application:
+
+```bash
 make run
 ```
 
-`make run` starts PostgreSQL, ingests the configured PDF, and then starts MLflow and the RAG API. Use `make up` to start the services later without re-ingesting:
+Use Option A if you need to control or retry ingestion separately. Use Option B to build, ingest, and start the app together. The DVC pipeline (`dvc.yaml`) tracks ingestion output; it does not build the Docker image or start the application.
+
+### 5. Try Example Questions
+
+With the API running, test it with the Arabic or English example:
 
 ```bash
-make up
-# Runs: docker compose up --build -d
+make ask_example_ar
+make ask_example_en
 ```
+
+The RAG API is available at `http://localhost:3000`. To run the evaluation after configuring the Groq API key:
+
+```bash
+make eval
+```
+
+Free-tier API limits may restrict the number of evaluation examples that can be completed in one run.
 
 The model and data directories are mounted from the host; the large GGUF model is not copied into the image.
 
@@ -205,18 +221,6 @@ curl http://localhost:3000/metrics
 
 If ingestion fails, resolve the error and run `make ingest` to retry the configured PDF. Use `make add-doc DOC=/path/to/document.pdf` to ingest another PDF.
 
-### Load Test the RAG API
-
-Start the services with `make up`, then run the configured Locust load test:
-
-```bash
-uv sync --group dev
-make locst
-```
-
-`make locst` runs a headless test with two users for one minute against `http://localhost:3000`. It writes an HTML report to `reports/locust_report_<timestamp>.html`.
-
-Each simulated user sends a legal question every 1–3 seconds. Requests invoke retrieval and the Groq LLM, so the measured latency includes both; start with a low user count and account for provider rate limits and API costs before increasing load.
 
 ## Tests and Continuous Integration
 
@@ -229,31 +233,23 @@ make test
 
 GitHub Actions runs the test suite on pushes and pull requests. The workflow starts a temporary PostgreSQL database with pgvector and runs a system integration test through article chunking and embedding orchestration, database storage, vector retrieval, and RAG prompt creation. It uses a fixed test embedding and a stub language model, so it does not need the local embedding model or API keys.
 
-## Main Project Files
+## Project Directories
 
-```text
-.
-├── config/
-│   └── rag.yaml
-├── evaluation/
-│   └── rag_eval.py
-└── src/
-    └── jurisrag_arabic/
-        ├── ingestion/
-        │   ├── process_docs.py
-        │   ├── embedding.py
-        │   └── add_to_db.py
-        ├── retrival/
-        │   └── retrive.py
-        └── rag.py
-```
+Here is what each main project directory contains:
 
-| File | Responsibility |
+| Directory | What it contains |
 |---|---|
-| `config/rag.yaml` | Stores general RAG settings, including chunk size, retrieval count, model configuration, and prompts. |
-| `src/jurisrag_arabic/ingestion/process_docs.py` | Extracts and processes legal articles from PDF documents. |
-| `src/jurisrag_arabic/ingestion/embedding.py` | Splits article text into chunks and generates embeddings using the local model. |
-| `src/jurisrag_arabic/ingestion/add_to_db.py` | Creates the database tables and stores articles and embeddings. |
-| `src/jurisrag_arabic/retrival/retrive.py` | Retrieves relevant text chunks from PostgreSQL using vector similarity search. |
-| `src/jurisrag_arabic/rag.py` | Coordinates retrieval and answer generation using the Groq API. |
-| `evaluation/rag_eval.py` | Evaluates answer quality using the golden dataset and Gemini as an LLM judge. |
+| `.github/` | GitHub Actions workflows, including automated tests. |
+| `.dvc/` | DVC settings for tracking and downloading project data. |
+| `config/` | RAG settings such as the model names, chunk size, retrieval count, and prompts. |
+| `data/raw/` | Original legal documents used as ingestion input. DVC manages these files. |
+| `data/processed/` | Processed legal documents and shared ingestion files. |
+| `evaluation/` | The evaluation script and test questions with expected answers. |
+| `grafana/` | Grafana dashboard and provisioning files. |
+| `models/bge-m3/` | The downloaded local BGE-M3 embedding model. |
+| `monitoring/` | Prometheus and Grafana configuration for monitoring the services. |
+| `notebook/` | Jupyter notebooks used to explore or test ingestion. |
+| `reports/` | Generated Locust load-test reports. |
+| `scripts/` | Helper scripts, including the embedding-model downloader. |
+| `src/jurisrag_arabic/` | The application code: document ingestion, embeddings, retrieval, and the RAG API. |
+| `tests/` | Automated unit and integration tests. |
